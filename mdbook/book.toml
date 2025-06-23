@@ -1,0 +1,5 @@
+[book]
+authors = ["Artur Sulej"]
+language = "en"
+src = "src"
+title = "Rust ebooks"
