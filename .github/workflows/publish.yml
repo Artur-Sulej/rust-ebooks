@@ -1,0 +1,93 @@
+name: Build & Publish Rust Book eBooks
+
+on:
+  schedule:
+    - cron: '0 3 * * *'   # Nightly at 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y calibre git
+
+      - name: Install Rust and mdbook-epub
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source $HOME/.cargo/env
+          rustup update
+          cargo install mdbook mdbook-epub
+
+      - name: Clone the Rust Book source
+        run: |
+          git clone --depth 1 https://github.com/rust-lang/book.git rust-book
+
+      - name: Enable EPUB backend in book.toml
+        run: |
+          echo "[output.epub]" >> rust-book/book.toml
+
+      - name: Build EPUB with mdbook
+        run: |
+          cd rust-book
+          mdbook build
+
+      - name: Find and copy EPUB to site directory
+        run: |
+          EPUB_FILE=$(find rust-book/book/epub -name '*.epub' | head -n 1)
+          mkdir -p site
+          cp "$EPUB_FILE" site/rust-book.epub
+
+      - name: Convert EPUB to AZW3
+        run: |
+          ebook-convert site/rust-book.epub site/rust-book.azw3
+
+      - name: Generate index.html with download links
+        run: |
+          echo '<!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <title>The Rust Book – Nightly eBooks</title>
+            <style>
+              body { font-family: sans-serif; margin: 2em; }
+              h1 { color: #d2691e; }
+              a { font-size: 1.2em; margin-right: 2em; }
+            </style>
+          </head>
+          <body>
+            <h1>The Rust Book – Nightly eBooks</h1>
+            <p>Download the latest build:</p>
+            <ul>
+              <li><a href="rust-book.epub" download>Download EPUB</a></li>
+              <li><a href="rust-book.azw3" download>Download AZW3 (Kindle)</a></li>
+            </ul>
+            <p>Last updated: '$(date -u)'</p>
+            <p><a href="https://github.com/${{ github.repository }}">GitHub Repo</a></p>
+          </body>
+          </html>' > site/index.html
+
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
