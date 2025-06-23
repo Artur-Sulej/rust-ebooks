@@ -1,8 +1,8 @@
-name: Build & Publish Rust Book eBooks
+name: Publish Rust eBooks
 
 on:
   schedule:
-    - cron: '0 3 * * *'   # Nightly at 03:00 UTC
+    - cron: '0 3 * * *'
   workflow_dispatch:
 
 permissions:
@@ -47,50 +47,58 @@ jobs:
             cargo install mdbook-epub
           fi
 
-      - name: Clone the Rust Book source
-        run: |
-          git clone --depth 1 https://github.com/rust-lang/book.git rust-book
+      # Build The Rust Book
+      - name: Clone The Rust Book source
+        run: git clone --depth 1 https://github.com/rust-lang/book.git rust-book
 
-      - name: Enable EPUB backend in book.toml
-        run: |
-          echo "[output.epub]" >> rust-book/book.toml
+      - name: Enable EPUB backend in book.toml (Rust Book)
+        run: echo "[output.epub]" >> rust-book/book.toml
 
-      - name: Build EPUB with mdbook
-        run: |
-          cd rust-book
-          mdbook build
+      - name: Build EPUB with mdbook (Rust Book)
+        run: cd rust-book && mdbook build
 
-      - name: Find and copy EPUB to site directory
+      - name: Copy Rust Book EPUB/AZW3 to site
         run: |
-          EPUB_FILE=$(find rust-book/book/epub -name '*.epub' | head -n 1)
           mkdir -p site
+          EPUB_FILE=$(find rust-book/book/epub -name '*.epub' | head -n 1)
           cp "$EPUB_FILE" site/rust-book.epub
-
-      - name: Convert EPUB to AZW3
-        run: |
           ebook-convert site/rust-book.epub site/rust-book.azw3
 
+      # Build Rust By Example
+      - name: Clone Rust By Example source
+        run: git clone --depth 1 https://github.com/rust-lang/rust-by-example.git rust-by-example
+
+      - name: Enable EPUB backend in book.toml (Rust By Example)
+        run: echo "[output.epub]" >> rust-by-example/book.toml
+
+      - name: Build EPUB with mdbook (Rust By Example)
+        run: cd rust-by-example && mdbook build
+
+      - name: Copy Rust By Example EPUB/AZW3 to site
+        run: |
+          EPUB_FILE=$(find rust-by-example/book/epub -name '*.epub' | head -n 1)
+          cp "$EPUB_FILE" site/rust-by-example.epub
+          ebook-convert site/rust-by-example.epub site/rust-by-example.azw3
+
+      # Build bookshelf landing page with mdBook
       - name: Update mdBook README with links
         run: |
           cat > mdbook/src/README.md <<EOF
-          # Rust Book Nightly eBooks
+          # Rust Books Nightly eBooks
 
           Download the latest builds:
 
-          - [Download EPUB](rust-book.epub)
-          - [Download AZW3 (Kindle)](rust-book.azw3)
+          - [The Rust Programming Language (EPUB)](rust-book.epub)
+          - [The Rust Programming Language (AZW3)](rust-book.azw3)
+          - [Rust By Example (EPUB)](rust-by-example.epub)
+          - [Rust By Example (AZW3)](rust-by-example.azw3)
           EOF
 
       - name: Build mdBook site
-        run: |
-          cd mdbook
-          mdbook build
+        run: cd mdbook && mdbook build
 
       - name: Prepare site directory
-        run: |
-          # Copy all mdBook output files into site/, but do NOT copy over rust-book.epub or rust-book.azw3
-          # (If mdBook output doesn't contain those files, this is safe)
-          cp -r mdbook/book/* site/
+        run: cp -r mdbook/book/* site/
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
