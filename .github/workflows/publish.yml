@@ -25,6 +25,11 @@ jobs:
             ~/.cargo/bin
           key: ${{ runner.os }}-cargo-bin-v1
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y calibre git
+
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -72,8 +77,8 @@ jobs:
 
           Download the latest builds:
 
-          - [Download EPUB](../rust-book.epub)
-          - [Download AZW3 (Kindle)](../rust-book.azw3)
+          - [Download EPUB](rust-book.epub)
+          - [Download AZW3 (Kindle)](rust-book.azw3)
           EOF
 
       - name: Build mdBook site
@@ -83,11 +88,9 @@ jobs:
 
       - name: Prepare site directory
         run: |
-          # Copy the mdBook output to the site directory
+          # Copy all mdBook output files into site/, but do NOT copy over rust-book.epub or rust-book.azw3
+          # (If mdBook output doesn't contain those files, this is safe)
           cp -r mdbook/book/* site/
-          # Copy eBooks into the site directory (already there, but ensures they're present)
-          cp site/rust-book.epub site/rust-book.epub
-          cp site/rust-book.azw3 site/rust-book.azw3
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
