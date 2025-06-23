@@ -51,30 +51,29 @@ jobs:
         run: |
           ebook-convert site/rust-book.epub site/rust-book.azw3
 
-      - name: Generate index.html with download links
+      - name: Update mdBook README with links
         run: |
-          echo '<!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <title>The Rust Book – Nightly eBooks</title>
-            <style>
-              body { font-family: sans-serif; margin: 2em; }
-              h1 { color: #d2691e; }
-              a { font-size: 1.2em; margin-right: 2em; }
-            </style>
-          </head>
-          <body>
-            <h1>The Rust Book – Nightly eBooks</h1>
-            <p>Download the latest build:</p>
-            <ul>
-              <li><a href="rust-book.epub" download>Download EPUB</a></li>
-              <li><a href="rust-book.azw3" download>Download AZW3 (Kindle)</a></li>
-            </ul>
-            <p>Last updated: '$(date -u)'</p>
-            <p><a href="https://github.com/${{ github.repository }}">GitHub Repo</a></p>
-          </body>
-          </html>' > site/index.html
+          cat > mdbook/src/README.md <<EOF
+          # Rust Book Nightly eBooks
+
+          Download the latest builds:
+
+          - [Download EPUB](../rust-book.epub)
+          - [Download AZW3 (Kindle)](../rust-book.azw3)
+          EOF
+
+      - name: Build mdBook site
+        run: |
+          cd mdbook
+          mdbook build
+
+      - name: Prepare site directory
+        run: |
+          # Copy the mdBook output to the site directory
+          cp -r mdbook/book/* site/
+          # Copy eBooks into the site directory (already there, but ensures they're present)
+          cp site/rust-book.epub site/rust-book.epub
+          cp site/rust-book.azw3 site/rust-book.azw3
 
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
