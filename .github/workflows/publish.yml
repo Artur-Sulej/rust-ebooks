@@ -49,10 +49,16 @@ env:
       title: Rust Unsafe Code Guidelines
       build_dir: unsafe-code-guidelines/reference
 
-    - id: rust-wasm-book
-      repo: https://github.com/rustwasm/book.git
-      website: https://rustwasm.github.io/book
-      title: The Rust and WebAssembly Book
+    - id: embedded-book
+      repo: https://github.com/rust-embedded/book.git
+      website: https://docs.rust-embedded.org/book
+      title: The Embedded Rust Book
+
+    - id: discovery-mb2
+      repo: https://github.com/rust-embedded/discovery-mb2
+      website: https://docs.rust-embedded.org/discovery-mb2
+      title: micro::bit v2 Embedded Discovery Book
+      build_dir: discovery-mb2/mdbook
 
     - id: wasm-bindgen-book
       repo: https://github.com/rustwasm/wasm-bindgen.git
@@ -60,16 +66,16 @@ env:
       title: The wasm-bindgen Guide
       build_dir: wasm-bindgen-book/guide
 
-    - id: embedded-book
-      repo: https://github.com/rust-embedded/book.git
-      website: https://docs.rust-embedded.org/book
-      title: The Embedded Rust Book
-
     - id: embedded-rtic
       repo: https://github.com/rtic-rs/rtic.git
       website: https://rtic.rs/1/book/en/
-      title: Real-Time Interrupt-driven Concurrency (RTIC) Book
+      title: Real-Time Interrupt-driven Concurrency
       build_dir: embedded-rtic/book/en
+
+    - id: rust-wasm-book
+      repo: https://github.com/rustwasm/book.git
+      website: https://rustwasm.github.io/book
+      title: The Rust and WebAssembly Book
 
 jobs:
   build:
