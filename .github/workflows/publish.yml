@@ -79,6 +79,7 @@ jobs:
 
             epub_out="${filename}.epub"
             azw3_out="${filename}.azw3"
+            mobi_out="${filename}.mobi"
 
             echo "Cloning $repo..."
             git clone --depth 1 "$repo" "$id"
@@ -93,6 +94,7 @@ jobs:
             EPUB_FILE=$(find "$id/book/epub" -name '*.epub' | head -n 1)
             cp "$EPUB_FILE" site/"$epub_out"
             ebook-convert site/"$epub_out" site/"$azw3_out"
+            ebook-convert site/"$epub_out" site/"$mobi_out"
             done
 
             # Generate bookshelf README.md for mdBook
@@ -105,6 +107,7 @@ jobs:
             title=$(echo "$book_json" | jq -r .title)
             echo "- [$title (EPUB)](${filename}.epub)" >> mdbook/src/README.md
             echo "- [$title (AZW3)](${filename}.azw3)" >> mdbook/src/README.md
+            echo "- [$title (MOBI)](${filename}.mobi)" >> mdbook/src/README.md
             done
 
       - name: Build mdBook site
