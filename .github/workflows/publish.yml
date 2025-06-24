@@ -72,8 +72,9 @@ jobs:
           mapfile -t book_array < <(echo "$books_json" | jq -c '.[]')
 
           # Generate bookshelf README.md for mdBook
-          echo "# Rust Books Nightly eBooks" > mdbook/src/README.md
+          echo "# Rust ebooks nightly builds" > mdbook/src/README.md
           echo "" >> mdbook/src/README.md
+          echo "Last updated: $(date -u +'%Y-%m-%d %H:%M:%S %Z')" >> mdbook/src/README.md
           echo "Download the latest builds:" >> mdbook/src/README.md
 
           for book_json in "${book_array[@]}"; do
