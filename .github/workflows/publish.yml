@@ -1,4 +1,4 @@
-name: Publish Rust eBooks
+name: Build & Publish Rust Books eBooks
 
 on:
   schedule:
@@ -10,25 +10,33 @@ permissions:
   pages: write
   id-token: write
 
+env:
+  BOOKS: |
+    - id: rust-book
+      repo: https://github.com/rust-lang/book.git
+      epub_out: rust-book.epub
+      azw3_out: rust-book.azw3
+      title: The Rust Programming Language
+    - id: rust-by-example
+      repo: https://github.com/rust-lang/rust-by-example.git
+      epub_out: rust-by-example.epub
+      azw3_out: rust-by-example.azw3
+      title: Rust By Example
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        book:
-          - id: rust-book
-            repo: https://github.com/rust-lang/book.git
-            epub_out: rust-book.epub
-            azw3_out: rust-book.azw3
-            title: "The Rust Programming Language"
-          - id: rust-by-example
-            repo: https://github.com/rust-lang/rust-by-example.git
-            epub_out: rust-by-example.epub
-            azw3_out: rust-by-example.azw3
-            title: "Rust By Example"
-
     steps:
       - uses: actions/checkout@v4
+
+      - name: Cache cargo registry and binaries
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+          key: ${{ runner.os }}-cargo-bin-v1
 
       - name: Install dependencies
         run: |
@@ -52,31 +60,64 @@ jobs:
             cargo install mdbook-epub
           fi
 
-      - name: Clone the book source
+      - name: Build all books and generate eBooks
         run: |
-          git clone --depth 1 ${{ matrix.book.repo }} ${{ matrix.book.id }}
+          mkdir -p site
 
-      - name: Enable EPUB backend in book.toml
-        run: |
-          echo "[output.epub]" >> ${{ matrix.book.id }}/book.toml
+          # Write the YAML from env to a file
+          echo "${BOOKS}" > books.yaml
 
-      - name: Build EPUB with mdbook
+          # Convert YAML to JSON array
+          books_json=$(yq -o=json '.' books.yaml)
+
+          # Use mapfile to robustly loop over each book object
+          mapfile -t book_array < <(echo "$books_json" | jq -c '.[]')
+
+          for book_json in "${book_array[@]}"; do
+            id=$(echo "$book_json" | jq -r .id)
+            repo=$(echo "$book_json" | jq -r .repo)
+            epub_out=$(echo "$book_json" | jq -r .epub_out)
+            azw3_out=$(echo "$book_json" | jq -r .azw3_out)
+            title=$(echo "$book_json" | jq -r .title)
+
+            echo "Cloning $repo..."
+            git clone --depth 1 "$repo" "$id"
+            echo "[output.epub]" >> "$id/book.toml"
+            cd "$id"
+            mdbook build
+            cd ..
+            EPUB_FILE=$(find "$id/book/epub" -name '*.epub' | head -n 1)
+            cp "$EPUB_FILE" site/"$epub_out"
+            ebook-convert site/"$epub_out" site/"$azw3_out"
+          done
+
+          # Generate bookshelf README.md for mdBook
+          cat > mdbook/src/README.md <<EOF
+          # Rust Books Nightly eBooks
+
+          Download the latest builds:
+          EOF
+
+          for book_json in "${book_array[@]}"; do
+            epub_out=$(echo "$book_json" | jq -r .epub_out)
+            azw3_out=$(echo "$book_json" | jq -r .azw3_out)
+            title=$(echo "$book_json" | jq -r .title)
+            echo "- [$title (EPUB)]($epub_out)" >> mdbook/src/README.md
+            echo "- [$title (AZW3)]($azw3_out)" >> mdbook/src/README.md
+          done
+
+      - name: Build mdBook site
         run: |
-          cd ${{ matrix.book.id }}
+          cd mdbook
           mdbook build
 
-      - name: Find and copy EPUB to artifact dir
-        run: |
-          mkdir -p ebooks
-          EPUB_FILE=$(find ${{ matrix.book.id }}/book/epub -name '*.epub' | head -n 1)
-          cp "$EPUB_FILE" ebooks/${{ matrix.book.epub_out }}
-          ebook-convert ebooks/${{ matrix.book.epub_out }} ebooks/${{ matrix.book.azw3_out }}
+      - name: Prepare site directory
+        run: cp -r mdbook/book/* site/
 
-      - name: Upload eBooks artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: ebooks-${{ matrix.book.id }}
-          path: ebooks/
+          path: site
 
   deploy:
     needs: build
