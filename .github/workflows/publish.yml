@@ -43,30 +43,11 @@ env:
       title: The Cargo Book
       build_dir: cargo-book/src/doc
 
-    - id: edition-guide
-      repo: https://github.com/rust-lang/edition-guide.git
-      website: https://doc.rust-lang.org/edition-guide
-      filename: edition-guide
-      title: The Rust Edition Guide
-
     - id: async-book
       repo: https://github.com/rust-lang/async-book.git
       website: https://rust-lang.github.io/async-book
       filename: async-book
       title: Asynchronous Programming in Rust with async/await
-
-    - id: rust-by-practice
-      repo: https://github.com/sunface/rust-by-practice.git
-      website: https://practice.rs
-      filename: rust-by-practice
-      title: Rust By Practice
-      build_dir: rust-by-practice/en
-
-    - id: unstable-book
-      repo: https://github.com/rust-lang/unstable-book.git
-      website: https://doc.rust-lang.org/unstable-book
-      filename: unstable-book
-      title: The Unstable Book
 
     - id: unsafe-code-guidelines
       repo: https://github.com/rust-lang/unsafe-code-guidelines.git
@@ -100,30 +81,12 @@ env:
       filename: embedded-discovery
       title: "Discovery: An Introduction to Embedded Systems Programming in Rust"
 
-    - id: embedded-hal
-      repo: https://github.com/rust-embedded/embedded-hal.git
-      website: https://docs.rust-embedded.org/embedded-hal
-      filename: embedded-hal
-      title: The Embedded HAL Book
-
-    - id: bare-metal-rust
-      repo: https://github.com/andre-richter/bare-metal-rust.git
-      website: https://andre-richter.github.io/bare-metal-rust
-      filename: bare-metal-rust
-      title: Bare Metal Rust
-
     - id: embedded-rtic
       repo: https://github.com/rtic-rs/rtic.git
       website: https://rtic.rs/1/book/en/
       filename: embedded-rtic
       title: Real-Time Interrupt-driven Concurrency (RTIC) Book
       build_dir: embedded-rtic/book/en
-
-    - id: real-time-for-the-masses
-      repo: https://github.com/ferrous-systems/real-time-for-the-masses.git
-      website: https://ferrous-systems.github.io/real-time-for-the-masses
-      filename: real-time-for-the-masses
-      title: Real-Time for the Masses
 
 jobs:
   build:
@@ -229,7 +192,7 @@ jobs:
               cd -
               continue
             fi
-            
+          
             cp "$EPUB_FILE" "$OLDPWD/site/$epub_out"
             ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$azw3_out"
             cd -
