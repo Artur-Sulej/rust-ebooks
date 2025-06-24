@@ -128,7 +128,9 @@ jobs:
             id=$(echo "$book_json" | jq -r .id)
             repo=$(echo "$book_json" | jq -r .repo)
             title=$(echo "$book_json" | jq -r .title)
-            build_dir=$(echo "$book_json" | jq -r '.build_dir // ""')
+
+            # Use build_dir if present, else default to id
+            build_dir=$(echo "$book_json" | jq -r ".build_dir // .id")
 
             epub_out="${id}.epub"
             azw3_out="${id}.azw3"
@@ -146,12 +148,12 @@ jobs:
 
             # Try to extract the authors line from the original book.toml (if it exists)
             authors_line=""
-            if [ -f "$id/book.toml" ]; then
-              authors_line=$(grep '^authors' "$id/book.toml" | head -n1)
+            if [ -f "$build_dir/book.toml" ]; then
+              authors_line=$(grep '^authors' "$build_dir/book.toml" | head -n1)
             fi
 
             # Write the new book.toml, preserving authors if found
-            cat > "$id/book.toml" <<EOF
+            cat > "$build_dir/book.toml" <<EOF
             [book]
             title = "$title"
             ${authors_line:+$authors_line}
@@ -162,12 +164,7 @@ jobs:
             optional = true
           EOF
 
-            # Use build_dir if present, else default to id
-            if [ -n "$build_dir" ]; then
-              cd "$build_dir"
-            else
-              cd "$id"
-            fi
+            cd "$build_dir"
 
             mdbook build
             mdbook-epub -s .
@@ -178,7 +175,7 @@ jobs:
               cd -
               continue
             fi
-          
+
             cp "$EPUB_FILE" "$OLDPWD/site/$epub_out"
             ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$azw3_out"
             ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$mobi_out"
