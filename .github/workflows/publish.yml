@@ -71,6 +71,11 @@ jobs:
           # Use mapfile to robustly loop over each book object
           mapfile -t book_array < <(echo "$books_json" | jq -c '.[]')
 
+          # Generate bookshelf README.md for mdBook
+          echo "# Rust Books Nightly eBooks" > mdbook/src/README.md
+          echo "" >> mdbook/src/README.md
+          echo "Download the latest builds:" >> mdbook/src/README.md
+
           for book_json in "${book_array[@]}"; do
             id=$(echo "$book_json" | jq -r .id)
             repo=$(echo "$book_json" | jq -r .repo)
@@ -95,20 +100,11 @@ jobs:
             cp "$EPUB_FILE" site/"$epub_out"
             ebook-convert site/"$epub_out" site/"$azw3_out"
             ebook-convert site/"$epub_out" site/"$mobi_out"
-            done
 
-            # Generate bookshelf README.md for mdBook
-            echo "# Rust Books Nightly eBooks" > mdbook/src/README.md
-            echo "" >> mdbook/src/README.md
-            echo "Download the latest builds:" >> mdbook/src/README.md
-
-            for book_json in "${book_array[@]}"; do
-            filename=$(echo "$book_json" | jq -r .filename)
-            title=$(echo "$book_json" | jq -r .title)
             echo "- [$title (EPUB)](${filename}.epub)" >> mdbook/src/README.md
             echo "- [$title (AZW3)](${filename}.azw3)" >> mdbook/src/README.md
             echo "- [$title (MOBI)](${filename}.mobi)" >> mdbook/src/README.md
-            done
+          done
 
       - name: Build mdBook site
         run: |
