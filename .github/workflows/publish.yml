@@ -188,10 +188,17 @@ jobs:
             echo "Cloning $repo..."
             git clone --depth 1 "$repo" "$id"
 
-            # Write minimal valid book.toml
+            # Try to extract the authors line from the original book.toml (if it exists)
+            authors_line=""
+            if [ -f "$id/book.toml" ]; then
+            authors_line=$(grep '^authors' "$id/book.toml" | head -n1)
+            fi
+
+            # Write the new book.toml, preserving authors if found
             cat > "$id/book.toml" <<EOF
             [book]
             title = "$title"
+            ${authors_line:+$authors_line}
 
             [output.epub]
 
