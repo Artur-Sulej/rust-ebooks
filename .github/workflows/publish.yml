@@ -75,12 +75,6 @@ env:
       filename: embedded-book
       title: The Embedded Rust Book
 
-    - id: embedded-discovery
-      repo: https://github.com/rust-embedded/discovery.git
-      website: https://docs.rust-embedded.org/discovery
-      filename: embedded-discovery
-      title: "Discover the world of microcontrollers through Rust"
-
     - id: embedded-rtic
       repo: https://github.com/rtic-rs/rtic.git
       website: https://rtic.rs/1/book/en/
@@ -139,9 +133,9 @@ jobs:
           # Use mapfile to robustly loop over each book object
           mapfile -t book_array < <(echo "$books_json" | jq -c '.[]')
 
+          cat README.md > mdbook/src/ABOUT.md
+
           # Generate bookshelf README.md for mdBook
-          echo "# Rust ebooks – nightly builds" > mdbook/src/README.md
-          echo "" >> mdbook/src/README.md
           echo "Last updated: $(date -u +'%Y-%m-%d %H:%M:%S %Z')" >> mdbook/src/README.md
 
           for book_json in "${book_array[@]}"; do
@@ -155,7 +149,7 @@ jobs:
             azw3_out="${filename}.azw3"
             mobi_out="${filename}.mobi"
 
-            echo "Cloning $repo..."
+            echo "Cloning $repo"
             git clone --depth 1 "$repo" "$id"
 
             # Remove shields.io badges that break mdbook-epub from all markdown
@@ -199,11 +193,12 @@ jobs:
           
             cp "$EPUB_FILE" "$OLDPWD/site/$epub_out"
             ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$azw3_out"
+            ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$mobi_out"
             cd -
 
             # Add to bookshelf
             website=$(echo "$book_json" | jq -r .website)
-            echo "- [$title (EPUB)]($epub_out) · [$title (AZW3)]($azw3_out) · [Online]($website)" >> mdbook/src/README.md
+            echo "1. $title · [EPUB]($epub_out) · [AZW3]($azw3_out) · [MOBI]($mobi_out) · [Online]($website) · [Repo]($repo)" >> mdbook/src/README.md
           done
 
       - name: Build mdBook site
