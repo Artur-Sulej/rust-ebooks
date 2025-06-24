@@ -14,12 +14,111 @@ env:
   BOOKS: |
     - id: rust-book
       repo: https://github.com/rust-lang/book.git
+      website: https://doc.rust-lang.org/stable/book
       filename: rust-book
       title: The Rust Programming Language
+
     - id: rust-by-example
       repo: https://github.com/rust-lang/rust-by-example.git
+      website: https://doc.rust-lang.org/rust-by-example
       filename: rust-by-example
       title: Rust By Example
+
+    - id: rust-reference
+      repo: https://github.com/rust-lang/reference.git
+      website: https://doc.rust-lang.org/reference
+      filename: rust-reference
+      title: The Rust Reference
+
+    - id: rustonomicon
+      repo: https://github.com/rust-lang/nomicon.git
+      website: https://doc.rust-lang.org/nomicon
+      filename: rustonomicon
+      title: The Rustonomicon
+
+    - id: cargo-book
+      repo: https://github.com/rust-lang/cargo.git
+      website: https://doc.rust-lang.org/cargo
+      filename: cargo-book
+      title: The Cargo Book
+
+    - id: edition-guide
+      repo: https://github.com/rust-lang/edition-guide.git
+      website: https://doc.rust-lang.org/edition-guide
+      filename: edition-guide
+      title: The Rust Edition Guide
+
+    - id: async-book
+      repo: https://github.com/rust-lang/async-book.git
+      website: https://rust-lang.github.io/async-book
+      filename: async-book
+      title: Asynchronous Programming in Rust with async/await
+
+    - id: rust-by-practice
+      repo: https://github.com/sunface/rust-by-practice.git
+      website: https://practice.rs
+      filename: rust-by-practice
+      title: Rust By Practice
+
+    - id: unstable-book
+      repo: https://github.com/rust-lang/unstable-book.git
+      website: https://doc.rust-lang.org/unstable-book
+      filename: unstable-book
+      title: The Unstable Book
+
+    - id: unsafe-code-guidelines
+      repo: https://github.com/rust-lang/unsafe-code-guidelines.git
+      website: https://rust-lang.github.io/unsafe-code-guidelines
+      filename: unsafe-code-guidelines
+      title: Rust Unsafe Code Guidelines
+
+    - id: rust-wasm-book
+      repo: https://github.com/rustwasm/book.git
+      website: https://rustwasm.github.io/book
+      filename: rust-wasm-book
+      title: The Rust and WebAssembly Book
+
+    - id: wasm-bindgen-book
+      repo: https://github.com/rustwasm/wasm-bindgen.git
+      website: https://rustwasm.github.io/wasm-bindgen
+      filename: wasm-bindgen-book
+      title: The wasm-bindgen Guide
+
+    - id: embedded-book
+      repo: https://github.com/rust-embedded/book.git
+      website: https://docs.rust-embedded.org/book
+      filename: embedded-book
+      title: The Embedded Rust Book
+
+    - id: embedded-discovery
+      repo: https://github.com/rust-embedded/discovery.git
+      website: https://docs.rust-embedded.org/discovery
+      filename: embedded-discovery
+      title: "Discovery: An Introduction to Embedded Systems Programming in Rust"
+
+    - id: embedded-hal
+      repo: https://github.com/rust-embedded/embedded-hal.git
+      website: https://docs.rust-embedded.org/embedded-hal
+      filename: embedded-hal
+      title: The Embedded HAL Book
+
+    - id: bare-metal-rust
+      repo: https://github.com/andre-richter/bare-metal-rust.git
+      website: https://andre-richter.github.io/bare-metal-rust
+      filename: bare-metal-rust
+      title: Bare Metal Rust
+
+    - id: embedded-rtic
+      repo: https://github.com/rtic-rs/book.git
+      website: https://rtic.rs/1/book/en/
+      filename: embedded-rtic
+      title: Real-Time Interrupt-driven Concurrency (RTIC) Book
+
+    - id: real-time-for-the-masses
+      repo: https://github.com/ferrous-systems/real-time-for-the-masses.git
+      website: https://ferrous-systems.github.io/real-time-for-the-masses
+      filename: real-time-for-the-masses
+      title: Real-Time for the Masses
 
 jobs:
   build:
