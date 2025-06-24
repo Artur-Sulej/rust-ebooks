@@ -189,7 +189,15 @@ jobs:
             git clone --depth 1 "$repo" "$id"
 
             # Write minimal valid book.toml
-            echo "[output.epub]" >> "$id/book.toml"
+            cat > "$id/book.toml" <<EOF
+            [book]
+            title = "$title"
+
+            [output.epub]
+
+            [output.linkcheck]
+            optional = true
+          EOF
 
             cd "$id"
             mdbook build
