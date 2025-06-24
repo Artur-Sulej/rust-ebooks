@@ -1,4 +1,4 @@
-name: Build & Publish Rust Books eBooks
+name: Publish Rust eBooks
 
 on:
   schedule:
@@ -72,10 +72,9 @@ jobs:
           mapfile -t book_array < <(echo "$books_json" | jq -c '.[]')
 
           # Generate bookshelf README.md for mdBook
-          echo "# Rust ebooks nightly builds" > mdbook/src/README.md
+          echo "# Rust ebooks – nightly builds" > mdbook/src/README.md
           echo "" >> mdbook/src/README.md
           echo "Last updated: $(date -u +'%Y-%m-%d %H:%M:%S %Z')" >> mdbook/src/README.md
-          echo "Download the latest builds:" >> mdbook/src/README.md
 
           for book_json in "${book_array[@]}"; do
             id=$(echo "$book_json" | jq -r .id)
@@ -102,9 +101,7 @@ jobs:
             ebook-convert site/"$epub_out" site/"$azw3_out"
             ebook-convert site/"$epub_out" site/"$mobi_out"
 
-            echo "- [$title (EPUB)](${filename}.epub)" >> mdbook/src/README.md
-            echo "- [$title (AZW3)](${filename}.azw3)" >> mdbook/src/README.md
-            echo "- [$title (MOBI)](${filename}.mobi)" >> mdbook/src/README.md
+            echo "1. $title – [EPUB](${filename}.epub) | [AZW3](${filename}.azw3) | [MOBI](${filename}.mobi) | [Repo](${repo})" >> mdbook/src/README.md
           done
 
       - name: Build mdBook site

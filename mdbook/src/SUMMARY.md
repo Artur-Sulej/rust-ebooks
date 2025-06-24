@@ -1,3 +1,3 @@
 # Summary
 
-- [ebooks](./README.md)
+- [Rust ebooks](./README.md)
