@@ -150,29 +150,8 @@ jobs:
             -e '/badge\.svg/d' \
             {} +
 
-            # Try to extract the authors multi-line from the original book.toml (if exists)
-            if [ -f "$build_dir/book.toml" ]; then
-              authors_line=$(awk '/^authors = / {
-                if (/\]/) { print; exit }
-                else { print; getline; while (!/\]/) { print; getline } print }
-              }' "$build_dir/book.toml")
-            else
-              authors_line=""
-            fi
-
-            # Write the new book.toml, preserving authors if found
-            cat > "$build_dir/book.toml" <<EOF
-          [book]
-          title = "$title"
-          ${authors_line:+$authors_line}
-
-          [output.epub]
-          EOF
-
             cd "$build_dir"
-
-            mdbook build
-            mdbook-epub -s .
+            mdbook-epub -s
 
             EPUB_FILE=$(find book/epub -name '*.epub' | head -n 1)
             if [ -z "$EPUB_FILE" ]; then
