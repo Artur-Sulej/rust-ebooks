@@ -41,6 +41,7 @@ env:
       website: https://doc.rust-lang.org/cargo
       filename: cargo-book
       title: The Cargo Book
+      build_dir: cargo-book/src/doc
 
     - id: edition-guide
       repo: https://github.com/rust-lang/edition-guide.git
@@ -59,6 +60,7 @@ env:
       website: https://practice.rs
       filename: rust-by-practice
       title: Rust By Practice
+      build_dir: rust-by-practice/en
 
     - id: unstable-book
       repo: https://github.com/rust-lang/unstable-book.git
@@ -71,6 +73,7 @@ env:
       website: https://rust-lang.github.io/unsafe-code-guidelines
       filename: unsafe-code-guidelines
       title: Rust Unsafe Code Guidelines
+      build_dir: unsafe-code-guidelines/reference
 
     - id: rust-wasm-book
       repo: https://github.com/rustwasm/book.git
@@ -83,6 +86,7 @@ env:
       website: https://rustwasm.github.io/wasm-bindgen
       filename: wasm-bindgen-book
       title: The wasm-bindgen Guide
+      build_dir: wasm-bindgen-book/guide
 
     - id: embedded-book
       repo: https://github.com/rust-embedded/book.git
@@ -109,10 +113,11 @@ env:
       title: Bare Metal Rust
 
     - id: embedded-rtic
-      repo: https://github.com/rtic-rs/book.git
+      repo: https://github.com/rtic-rs/rtic.git
       website: https://rtic.rs/1/book/en/
       filename: embedded-rtic
       title: Real-Time Interrupt-driven Concurrency (RTIC) Book
+      build_dir: embedded-rtic/book/en
 
     - id: real-time-for-the-masses
       repo: https://github.com/ferrous-systems/real-time-for-the-masses.git
@@ -159,6 +164,7 @@ jobs:
 
       - name: Build all books and generate eBooks
         run: |
+          set -e
           mkdir -p site
 
           # Write the YAML from env to a file
@@ -180,6 +186,7 @@ jobs:
             repo=$(echo "$book_json" | jq -r .repo)
             filename=$(echo "$book_json" | jq -r .filename)
             title=$(echo "$book_json" | jq -r .title)
+            build_dir=$(echo "$book_json" | jq -r '.build_dir // ""')
 
             epub_out="${filename}.epub"
             azw3_out="${filename}.azw3"
@@ -191,7 +198,7 @@ jobs:
             # Try to extract the authors line from the original book.toml (if it exists)
             authors_line=""
             if [ -f "$id/book.toml" ]; then
-            authors_line=$(grep '^authors' "$id/book.toml" | head -n1)
+              authors_line=$(grep '^authors' "$id/book.toml" | head -n1)
             fi
 
             # Write the new book.toml, preserving authors if found
@@ -206,16 +213,30 @@ jobs:
             optional = true
           EOF
 
-            cd "$id"
+            # Use build_dir if present, else default to id
+            if [ -n "$build_dir" ]; then
+              cd "$build_dir"
+            else
+              cd "$id"
+            fi
+
             mdbook build
             mdbook-epub -s .
-            cd ..
-            EPUB_FILE=$(find "$id/book/epub" -name '*.epub' | head -n 1)
-            cp "$EPUB_FILE" site/"$epub_out"
-            ebook-convert site/"$epub_out" site/"$azw3_out"
-            ebook-convert site/"$epub_out" site/"$mobi_out"
 
-            echo "1. $title – [EPUB](${filename}.epub) | [AZW3](${filename}.azw3) | [MOBI](${filename}.mobi) | [Repo](${repo})" >> mdbook/src/README.md
+            EPUB_FILE=$(find book/epub -name '*.epub' | head -n 1)
+            if [ -z "$EPUB_FILE" ]; then
+              echo "No EPUB generated for $id, skipping."
+              cd -
+              continue
+            fi
+            
+            cp "$EPUB_FILE" "$OLDPWD/site/$epub_out"
+            ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$azw3_out"
+            cd -
+
+            # Add to bookshelf
+            website=$(echo "$book_json" | jq -r .website)
+            echo "- [$title (EPUB)]($epub_out) · [$title (AZW3)]($azw3_out) · [Online]($website)" >> mdbook/src/README.md
           done
 
       - name: Build mdBook site
