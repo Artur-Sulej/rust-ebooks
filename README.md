@@ -1,5 +1,7 @@
 # Rust eBooks Nightly
 
+[![GitHub Pages Build Status](https://github.com/Artur-Sulej/rust-ebooks/actions/workflows/publish.yml/badge.svg)](https://github.com/Artur-Sulej/rust-ebooks/actions/workflows/publish.yml)
+
 This project builds and publishes the latest versions of popular Rust books in convenient eBook formats (EPUB, AZW3, MOBI) for offline reading.  
 New versions are generated every day.
 
