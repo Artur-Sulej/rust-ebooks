@@ -158,6 +158,10 @@ jobs:
             echo "Cloning $repo..."
             git clone --depth 1 "$repo" "$id"
 
+            # Remove shields.io badges that break mdbook-epub from all markdown
+            find "$id" -type f -name '*.md' -exec sed -i '/img.shields.io\/badge/d' {} +
+            find "$id" -type f -name '*.md' -exec sed -i '/img.shields.io\/github/d' {} +
+
             # Try to extract the authors line from the original book.toml (if it exists)
             authors_line=""
             if [ -f "$id/book.toml" ]; then
