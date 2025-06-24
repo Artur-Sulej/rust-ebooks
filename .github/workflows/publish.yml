@@ -152,6 +152,9 @@ jobs:
             echo "Cloning $repo"
             git clone --depth 1 "$repo" "$id"
 
+            last_commit_iso=$(git -C "$id" log -1 --format=%cI)
+            last_commit_at=$(date -d "$last_commit_iso" '+%Y-%m-%d')
+
             # Remove shields.io badges that break mdbook-epub from all markdown
             find "$id" -type f -name '*.md' -exec sed -i '/img.shields.io\/badge/d' {} +
             find "$id" -type f -name '*.md' -exec sed -i '/img.shields.io\/github/d' {} +
@@ -198,7 +201,7 @@ jobs:
 
             # Add to bookshelf
             website=$(echo "$book_json" | jq -r .website)
-            echo "1. $title · [EPUB]($epub_out) · [AZW3]($azw3_out) · [MOBI]($mobi_out) · [Online]($website) · [Repo]($repo)" >> mdbook/src/README.md
+            echo "1. $title · [EPUB]($epub_out) · [AZW3]($azw3_out) · [MOBI]($mobi_out) · [Online]($website) · [Repo]($repo) (commit: $last_commit_at)" >> mdbook/src/README.md
           done
 
       - name: Build mdBook site
