@@ -146,22 +146,26 @@ jobs:
             find "$id" -type f -name '*.md' -exec sed -i '/img.shields.io\/badge/d' {} +
             find "$id" -type f -name '*.md' -exec sed -i '/img.shields.io\/github/d' {} +
 
-            # Try to extract the authors line from the original book.toml (if it exists)
-            authors_line=""
+            # Try to extract the authors multi-line from the original book.toml (if exists)
             if [ -f "$build_dir/book.toml" ]; then
-              authors_line=$(grep '^authors' "$build_dir/book.toml" | head -n1)
+              authors_line=$(awk '/^authors = / {
+                if (/\]/) { print; exit }
+                else { print; getline; while (!/\]/) { print; getline } print }
+              }' "$build_dir/book.toml")
+            else
+              authors_line=""
             fi
 
             # Write the new book.toml, preserving authors if found
             cat > "$build_dir/book.toml" <<EOF
-            [book]
-            title = "$title"
-            ${authors_line:+$authors_line}
+          [book]
+          title = "$title"
+          ${authors_line:+$authors_line}
 
-            [output.epub]
+          [output.epub]
 
-            [output.linkcheck]
-            optional = true
+          [output.linkcheck]
+          optional = true
           EOF
 
             cd "$build_dir"
