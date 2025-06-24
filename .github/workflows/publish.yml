@@ -153,7 +153,7 @@ jobs:
             cd "$build_dir"
             mdbook-epub -s
 
-            EPUB_FILE=$(find book/epub -name '*.epub' | head -n 1)
+            EPUB_FILE=$(find book -name '*.epub' | head -n 1)
             if [ -z "$EPUB_FILE" ]; then
               echo "No EPUB generated for $id, skipping."
               cd -
