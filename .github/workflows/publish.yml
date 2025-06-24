@@ -15,70 +15,59 @@ env:
     - id: rust-book
       repo: https://github.com/rust-lang/book.git
       website: https://doc.rust-lang.org/stable/book
-      filename: rust-book
       title: The Rust Programming Language
 
     - id: rust-by-example
       repo: https://github.com/rust-lang/rust-by-example.git
       website: https://doc.rust-lang.org/rust-by-example
-      filename: rust-by-example
       title: Rust By Example
 
     - id: rust-reference
       repo: https://github.com/rust-lang/reference.git
       website: https://doc.rust-lang.org/reference
-      filename: rust-reference
       title: The Rust Reference
 
     - id: rustonomicon
       repo: https://github.com/rust-lang/nomicon.git
       website: https://doc.rust-lang.org/nomicon
-      filename: rustonomicon
       title: The Rustonomicon
 
     - id: cargo-book
       repo: https://github.com/rust-lang/cargo.git
       website: https://doc.rust-lang.org/cargo
-      filename: cargo-book
       title: The Cargo Book
       build_dir: cargo-book/src/doc
 
     - id: async-book
       repo: https://github.com/rust-lang/async-book.git
       website: https://rust-lang.github.io/async-book
-      filename: async-book
       title: Asynchronous Programming in Rust
 
     - id: unsafe-code-guidelines
       repo: https://github.com/rust-lang/unsafe-code-guidelines.git
       website: https://rust-lang.github.io/unsafe-code-guidelines
-      filename: unsafe-code-guidelines
       title: Rust Unsafe Code Guidelines
       build_dir: unsafe-code-guidelines/reference
 
     - id: rust-wasm-book
       repo: https://github.com/rustwasm/book.git
       website: https://rustwasm.github.io/book
-      filename: rust-wasm-book
       title: The Rust and WebAssembly Book
 
     - id: wasm-bindgen-book
       repo: https://github.com/rustwasm/wasm-bindgen.git
       website: https://rustwasm.github.io/wasm-bindgen
-      filename: wasm-bindgen-book
       title: The wasm-bindgen Guide
       build_dir: wasm-bindgen-book/guide
 
     - id: embedded-book
       repo: https://github.com/rust-embedded/book.git
       website: https://docs.rust-embedded.org/book
-      filename: embedded-book
       title: The Embedded Rust Book
 
     - id: embedded-rtic
       repo: https://github.com/rtic-rs/rtic.git
       website: https://rtic.rs/1/book/en/
-      filename: embedded-rtic
       title: Real-Time Interrupt-driven Concurrency (RTIC) Book
       build_dir: embedded-rtic/book/en
 
@@ -141,13 +130,12 @@ jobs:
           for book_json in "${book_array[@]}"; do
             id=$(echo "$book_json" | jq -r .id)
             repo=$(echo "$book_json" | jq -r .repo)
-            filename=$(echo "$book_json" | jq -r .filename)
             title=$(echo "$book_json" | jq -r .title)
             build_dir=$(echo "$book_json" | jq -r '.build_dir // ""')
 
-            epub_out="${filename}.epub"
-            azw3_out="${filename}.azw3"
-            mobi_out="${filename}.mobi"
+            epub_out="${id}.epub"
+            azw3_out="${id}.azw3"
+            mobi_out="${id}.mobi"
 
             echo "Cloning $repo"
             git clone --depth 1 "$repo" "$id"
