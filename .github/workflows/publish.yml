@@ -47,7 +47,7 @@ env:
       repo: https://github.com/rust-lang/async-book.git
       website: https://rust-lang.github.io/async-book
       filename: async-book
-      title: Asynchronous Programming in Rust with async/await
+      title: Asynchronous Programming in Rust
 
     - id: unsafe-code-guidelines
       repo: https://github.com/rust-lang/unsafe-code-guidelines.git
@@ -79,7 +79,7 @@ env:
       repo: https://github.com/rust-embedded/discovery.git
       website: https://docs.rust-embedded.org/discovery
       filename: embedded-discovery
-      title: "Discovery: An Introduction to Embedded Systems Programming in Rust"
+      title: "Discover the world of microcontrollers through Rust"
 
     - id: embedded-rtic
       repo: https://github.com/rtic-rs/rtic.git
