@@ -14,13 +14,11 @@ env:
   BOOKS: |
     - id: rust-book
       repo: https://github.com/rust-lang/book.git
-      epub_out: rust-book.epub
-      azw3_out: rust-book.azw3
+      filename: rust-book
       title: The Rust Programming Language
     - id: rust-by-example
       repo: https://github.com/rust-lang/rust-by-example.git
-      epub_out: rust-by-example.epub
-      azw3_out: rust-by-example.azw3
+      filename: rust-by-example
       title: Rust By Example
 
 jobs:
@@ -76,35 +74,38 @@ jobs:
           for book_json in "${book_array[@]}"; do
             id=$(echo "$book_json" | jq -r .id)
             repo=$(echo "$book_json" | jq -r .repo)
-            epub_out=$(echo "$book_json" | jq -r .epub_out)
-            azw3_out=$(echo "$book_json" | jq -r .azw3_out)
+            filename=$(echo "$book_json" | jq -r .filename)
             title=$(echo "$book_json" | jq -r .title)
+
+            epub_out="${filename}.epub"
+            azw3_out="${filename}.azw3"
 
             echo "Cloning $repo..."
             git clone --depth 1 "$repo" "$id"
+
+            # Write minimal valid book.toml
             echo "[output.epub]" >> "$id/book.toml"
+
             cd "$id"
             mdbook build
+            mdbook-epub -s .
             cd ..
             EPUB_FILE=$(find "$id/book/epub" -name '*.epub' | head -n 1)
             cp "$EPUB_FILE" site/"$epub_out"
             ebook-convert site/"$epub_out" site/"$azw3_out"
-          done
+            done
 
-          # Generate bookshelf README.md for mdBook
-          cat > mdbook/src/README.md <<EOF
-          # Rust Books Nightly eBooks
+            # Generate bookshelf README.md for mdBook
+            echo "# Rust Books Nightly eBooks" > mdbook/src/README.md
+            echo "" >> mdbook/src/README.md
+            echo "Download the latest builds:" >> mdbook/src/README.md
 
-          Download the latest builds:
-          EOF
-
-          for book_json in "${book_array[@]}"; do
-            epub_out=$(echo "$book_json" | jq -r .epub_out)
-            azw3_out=$(echo "$book_json" | jq -r .azw3_out)
+            for book_json in "${book_array[@]}"; do
+            filename=$(echo "$book_json" | jq -r .filename)
             title=$(echo "$book_json" | jq -r .title)
-            echo "- [$title (EPUB)]($epub_out)" >> mdbook/src/README.md
-            echo "- [$title (AZW3)]($azw3_out)" >> mdbook/src/README.md
-          done
+            echo "- [$title (EPUB)](${filename}.epub)" >> mdbook/src/README.md
+            echo "- [$title (AZW3)](${filename}.azw3)" >> mdbook/src/README.md
+            done
 
       - name: Build mdBook site
         run: |
