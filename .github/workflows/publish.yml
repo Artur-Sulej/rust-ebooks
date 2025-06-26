@@ -38,10 +38,20 @@ env:
       title: The Cargo Book
       build_dir: cargo-book/src/doc
 
+    - id: rust-cookbook
+      repo: https://github.com/rust-lang-nursery/rust-cookbook
+      website: https://rust-lang-nursery.github.io/rust-cookbook
+      title: Rust Cookbook
+
     - id: async-book
       repo: https://github.com/rust-lang/async-book.git
       website: https://rust-lang.github.io/async-book
       title: Asynchronous Programming in Rust
+
+    - id: too-many-lists
+      repo: https://github.com/rust-unofficial/too-many-lists
+      website: https://rust-unofficial.github.io/too-many-lists
+      title: Learning Rust With Entirely Too Many Linked Lists
 
     - id: unsafe-code-guidelines
       repo: https://github.com/rust-lang/unsafe-code-guidelines.git
