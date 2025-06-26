@@ -3,3 +3,6 @@ authors = ["Artur Sulej"]
 language = "en"
 src = "src"
 title = "Rust eBooks"
+
+[output.html]
+git-repository-url = "https://github.com/Artur-Sulej/rust-ebooks"
