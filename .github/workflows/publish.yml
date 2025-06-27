@@ -151,6 +151,7 @@ jobs:
             epub_out="${id}.epub"
             azw3_out="${id}.azw3"
             mobi_out="${id}.mobi"
+            pdf_out="${id}.pdf"
 
             echo "Cloning $repo"
             git clone --depth 1 "$repo" "$id"
@@ -179,11 +180,12 @@ jobs:
             cp "$EPUB_FILE" "$OLDPWD/site/$epub_out"
             ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$azw3_out"
             ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$mobi_out"
+            ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$pdf_out"
             cd -
 
             # Add to bookshelf
             website=$(echo "$book_json" | jq -r .website)
-            echo "1. $title · [EPUB]($epub_out) · [AZW3]($azw3_out) · [MOBI]($mobi_out) · [Online]($website) · [Repo]($repo) (commit: $last_commit_at)" >> mdbook/src/README.md
+            echo "1. $title · [EPUB]($epub_out) · [AZW3]($azw3_out) · [MOBI]($mobi_out) · [PDF]($pdf_out) · [Online]($website) · [Repo]($repo) (commit: $last_commit_at)" >> mdbook/src/README.md
           done
 
       - name: Build mdBook site
