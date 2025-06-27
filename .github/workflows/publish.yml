@@ -67,7 +67,7 @@ env:
     - id: discovery-mb2
       repo: https://github.com/rust-embedded/discovery-mb2
       website: https://docs.rust-embedded.org/discovery-mb2
-      title: micro::bit v2 Embedded Discovery Book
+      title: Embedded Discovery Book
       build_dir: discovery-mb2/mdbook
 
     - id: wasm-bindgen-book
