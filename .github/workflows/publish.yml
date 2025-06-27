@@ -159,8 +159,9 @@ jobs:
             last_commit_iso=$(git -C "$id" log -1 --format=%cI)
             last_commit_at=$(date -d "$last_commit_iso" '+%Y-%m-%d')
 
-            # Remove badges that break mdbook-epub from all markdown
+            # Remove badges, that break epub build, from all markdown
             find "$id" -type f -name '*.md' -exec sed -i \
+            -e '/badge-cache\.kominick\.com/d' \
             -e '/img\.shields\.io/d' \
             -e '/docs\.rs.*badge/d' \
             -e '/hackmd\.io.*badge/d' \
