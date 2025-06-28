@@ -200,7 +200,7 @@ jobs:
             cp "$EPUB_FILE" "$OLDPWD/site/$epub_out"
             ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$azw3_out"
             ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$mobi_out"
-            ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$pdf_out" --extra-css wrap-code.css
+            ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$pdf_out" --extra-css "$GITHUB_WORKSPACE/.github/workflows/wrap-code.css"
             cd -
 
             # Add to bookshelf
