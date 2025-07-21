@@ -123,7 +123,7 @@ jobs:
 
       - name: Build all books and generate eBooks
         run: |
-          set -e
+          set +e
           mkdir -p site
 
           # Write the YAML from env to a file
@@ -132,7 +132,7 @@ jobs:
           # Convert YAML to JSON array
           books_json=$(yq -o=json '.' books.yaml)
 
-          # Use mapfile to robustly loop over each book object
+          # Loop over each book object
           mapfile -t book_array < <(echo "$books_json" | jq -c '.[]')
 
           cat README.md > mdbook/src/ABOUT.md
@@ -140,46 +140,51 @@ jobs:
           # Generate bookshelf README.md for mdBook
           echo "Last updated: $(date -u +'%Y-%m-%d %H:%M:%S %Z')" >> mdbook/src/README.md
 
+          failed_count=0
+          succeeded_count=0
+
+          failed_count=0
+          succeeded_count=0
+
           for book_json in "${book_array[@]}"; do
             id=$(echo "$book_json" | jq -r .id)
             repo=$(echo "$book_json" | jq -r .repo)
             title=$(echo "$book_json" | jq -r .title)
-
-            # Use build_dir if present, else default to id
             build_dir=$(echo "$book_json" | jq -r ".build_dir // .id")
 
-            epub_out="${id}.epub"
-            azw3_out="${id}.azw3"
-            mobi_out="${id}.mobi"
-            pdf_out="${id}.pdf"
+            (
+              # 'set -e' inside subshell to fail the book immediately on any command error
+              set -e
 
-            echo "Cloning $repo"
-            git clone --depth 1 "$repo" "$id"
+              epub_out="${id}.epub"
+              azw3_out="${id}.azw3"
+              mobi_out="${id}.mobi"
+              pdf_out="${id}.pdf"
 
-            last_commit_iso=$(git -C "$id" log -1 --format=%cI)
-            last_commit_at=$(date -d "$last_commit_iso" '+%Y-%m-%d')
+              echo "Cloning $repo"
+              git clone --depth 1 "$repo" "$id"
 
-            # Remove badges, that break epub build, from all markdown
-            find "$id" -type f -name '*.md' -exec sed -i \
-            -e '/badge-cache\.kominick\.com/d' \
-            -e '/img\.shields\.io/d' \
-            -e '/docs\.rs.*badge/d' \
-            -e '/hackmd\.io.*badge/d' \
-            -e '/badge\.svg/d' \
-            {} +
+              last_commit_iso=$(git -C "$id" log -1 --format=%cI)
+              last_commit_at=$(date -d "$last_commit_iso" '+%Y-%m-%d')
 
-            # Extract the multi-line authors from the original book.toml (if exist)
-            if [ -f "$build_dir/book.toml" ]; then
-              authors_line=$(awk '/^authors = / {
-                if (/\]/) { print; exit }
-                else { print; getline; while (!/\]/) { print; getline } print }
-              }' "$build_dir/book.toml")
-            else
-              authors_line=""
-            fi
+              find "$id" -type f -name '*.md' -exec sed -i \
+                -e '/badge-cache\.kominick\.com/d' \
+                -e '/img\.shields\.io/d' \
+                -e '/docs\.rs.*badge/d' \
+                -e '/hackmd\.io.*badge/d' \
+                -e '/badge\.svg/d' \
+                {} +
 
-            # Write the new book.toml, preserving authors if found
-            cat > "$build_dir/book.toml" <<EOF
+              if [ -f "$build_dir/book.toml" ]; then
+                authors_line=$(awk '/^authors = / {
+                  if (/\]/) { print; exit }
+                  else { print; getline; while (!/\]/) { print; getline } print }
+                }' "$build_dir/book.toml")
+              else
+                authors_line=""
+              fi
+
+              cat > "$build_dir/book.toml" <<EOF
           [book]
           title = "$title"
           ${authors_line:+$authors_line}
@@ -187,26 +192,49 @@ jobs:
           [output.epub]
           EOF
 
-            cd "$build_dir"
-            mdbook build
+              cd "$build_dir"
+              mdbook build
 
-            EPUB_FILE=$(find book -name '*.epub' | head -n 1)
-            if [ -z "$EPUB_FILE" ]; then
-              echo "No EPUB generated for $id, skipping."
+              EPUB_FILE=$(find book -name '*.epub' | head -n 1)
+              if [ -z "$EPUB_FILE" ]; then
+                echo "No EPUB generated for $id, this is an error."
+                cd -
+                exit 1
+              fi
+
+              cp "$EPUB_FILE" "$OLDPWD/site/$epub_out"
+              ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$azw3_out"
+              ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$mobi_out"
+              ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$pdf_out" --extra-css "$GITHUB_WORKSPACE/.github/workflows/wrap-code.css"
               cd -
-              continue
+
+              website=$(echo "$book_json" | jq -r .website)
+              echo "1. $title · [EPUB]($epub_out) · [AZW3]($azw3_out) · [MOBI]($mobi_out) · [PDF]($pdf_out) · [Online]($website) · [Repo]($repo) (commit: $last_commit_at)" >> mdbook/src/README.md
+          
+            ) 2> "site/error-${id}.log"
+          
+            rc=$?
+            if [ $rc -ne 0 ]; then
+              echo "❗ FAILED: '$id' (see site/error-${id}.log)" >&2
+              failed_count=$((failed_count + 1))
+            else
+              succeeded_count=$((succeeded_count + 1))
             fi
-
-            cp "$EPUB_FILE" "$OLDPWD/site/$epub_out"
-            ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$azw3_out"
-            ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$mobi_out"
-            ebook-convert "$OLDPWD/site/$epub_out" "$OLDPWD/site/$pdf_out" --extra-css "$GITHUB_WORKSPACE/.github/workflows/wrap-code.css"
-            cd -
-
-            # Add to bookshelf
-            website=$(echo "$book_json" | jq -r .website)
-            echo "1. $title · [EPUB]($epub_out) · [AZW3]($azw3_out) · [MOBI]($mobi_out) · [PDF]($pdf_out) · [Online]($website) · [Repo]($repo) (commit: $last_commit_at)" >> mdbook/src/README.md
           done
+
+          echo
+          echo "SUMMARY: $succeeded_count succeeded, $failed_count failed."
+
+          if [ "$succeeded_count" -eq 0 ]; then
+            echo "💥 All books failed! See error logs above. Aborting workflow."
+            exit 1
+          fi
+
+      - name: Upload error logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: book-error-logs
+          path: site/error-*.log
 
       - name: Build mdBook site
         run: |
