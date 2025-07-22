@@ -213,7 +213,8 @@ jobs:
               cd -
 
               website=$(echo "$book_json" | jq -r .website)
-              echo "1. $title · [EPUB]($epub_out) · [AZW3]($azw3_out) · [MOBI]($mobi_out) · [PDF]($pdf_out) · [Online]($website) · [Repo]($repo) (commit: $last_commit_at)" >> mdbook/src/README.md
+              echo "1. **$title** (last commit: $last_commit_at)  " >> mdbook/src/README.md
+              echo "  [EPUB]($epub_out) • [AZW3]($azw3_out) • [MOBI]($mobi_out) • [PDF]($pdf_out) • [Online]($website) • [Repo]($repo)  " >> mdbook/src/README.md
 
             ) 2>&1
             )
