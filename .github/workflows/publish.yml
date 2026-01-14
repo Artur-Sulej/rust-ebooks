@@ -64,13 +64,13 @@ env:
       website: https://docs.rust-embedded.org/book
       title: The Embedded Rust Book
 
-    - id: discovery-mb2
-      repo: https://github.com/rust-embedded/discovery-mb2
-      website: https://docs.rust-embedded.org/discovery-mb2
-      title: Embedded Discovery Book
-      build_dir: discovery-mb2/mdbook
+    #    - id: discovery-mb2
+    #      repo: https://github.com/rust-embedded/discovery-mb2
+    #      website: https://docs.rust-embedded.org/discovery-mb2
+    #      title: Embedded Discovery Book
+    #      build_dir: discovery-mb2/mdbook
 
-    - id: wasm-bindgen-book
+    - id: wasm-binsdgen-book
       repo: https://github.com/rustwasm/wasm-bindgen.git
       website: https://rustwasm.github.io/wasm-bindgen
       title: The wasm-bindgen Guide
