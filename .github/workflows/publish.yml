@@ -115,13 +115,11 @@ jobs:
       - name: Install mdBook (prebuilt)
         uses: peaceiris/actions-mdbook@v2
         with:
-          mdbook-version: 'latest'
+          mdbook-version: '0.4.40'
 
-      - name: Install mdbook-epub (if needed)
+      - name: Install mdbook-epub
         run: |
-          if ! command -v mdbook-epub > /dev/null; then
-            cargo install mdbook-epub
-          fi
+          cargo install mdbook-epub --version 0.4.36 --locked --force
 
       - name: Build all books and generate eBooks
         run: |
