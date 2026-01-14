@@ -95,14 +95,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cache cargo registry and binaries
+      - name: Cache cargo registry
         uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
-            ~/.cargo/bin
-          key: ${{ runner.os }}-cargo-bin-v1
+          key: ${{ runner.os }}-cargo-registry-v1
 
       - name: Install dependencies
         run: |
