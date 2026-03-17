@@ -70,11 +70,11 @@ env:
     #      title: Embedded Discovery Book
     #      build_dir: discovery-mb2/mdbook
 
-    - id: wasm-binsdgen-book
+    - id: wasm-bindgen
       repo: https://github.com/rustwasm/wasm-bindgen.git
       website: https://rustwasm.github.io/wasm-bindgen
       title: The wasm-bindgen Guide
-      build_dir: wasm-bindgen-book/guide
+      build_dir: wasm-bindgen/guide
 
     - id: embedded-rtic
       repo: https://github.com/rtic-rs/rtic.git
