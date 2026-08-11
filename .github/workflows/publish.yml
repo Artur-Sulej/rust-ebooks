@@ -36,7 +36,7 @@ env:
       repo: https://github.com/rust-lang/cargo.git
       website: https://doc.rust-lang.org/cargo
       title: The Cargo Book
-      build_dir: cargo-book/src/doc
+      build_dir: cargo-book/src/doc/cargo
 
     - id: rust-cookbook
       repo: https://github.com/rust-lang-nursery/rust-cookbook
