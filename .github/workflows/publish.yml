@@ -244,21 +244,55 @@ jobs:
           path: |
             book-logs/*.log
 
-      - name: Notify failed builds via GitHub issue
+      - name: Sync failure issues
         if: always()
         run: |
-          if [ "${FAILED_COUNT}" -gt 0 ]; then
-            for f in book-logs/error-*.log; do
-              bookid=$(basename "$f" | sed 's/error-\(.*\)\.log/\1/')
-              gh issue create \
-                --title "Book '$bookid' failed in workflow" \
-                --body "See errors in artifact or main log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
-                --repo ${{ github.repository }}
-            done
+          # Needs at least one book log, otherwise the build step died early and nothing is known.
+          shopt -s nullglob
+          logs=(book-logs/*.log)
+          if [ "${#logs[@]}" -eq 0 ]; then
+            echo "No book logs, skipping issue sync."
+            exit 0
           fi
+
+          run_url="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          current_ids=$(echo "${BOOKS}" | yq '.[].id')
+          open_issues=$(gh issue list --repo "${{ github.repository }}" --state open \
+            --author "github-actions[bot]" --limit 5000 --json number,title)
+
+          has_open_issue() {
+            echo "$open_issues" | jq -e --arg t "Book '$1' failed in workflow" 'any(.[]; .title == $t)' > /dev/null
+          }
+
+          # One open issue per failing book, not one per run.
+          for f in book-logs/error-*.log; do
+            id=$(basename "$f" | sed 's/error-\(.*\)\.log/\1/')
+            if has_open_issue "$id"; then
+              echo "Issue for '$id' is already open."
+            else
+              gh issue create \
+                --title "Book '$id' failed in workflow" \
+                --body "See errors in artifact or main log: $run_url" \
+                --repo "${{ github.repository }}"
+            fi
+          done
+
+          # Close issues for books that built in this run or are no longer in the book list.
+          closed=0
+          while IFS=$'\t' read -r number id; do
+            if [ -f "book-logs/success-${id}.log" ] || ! echo "$current_ids" | grep -qxF "$id"; then
+              if gh issue close "$number" --repo "${{ github.repository }}" --reason completed; then
+                closed=$((closed + 1))
+              fi
+              [ "$closed" -ge "$MAX_CLOSE_PER_RUN" ] && break
+              sleep 1
+            fi
+          done < <(echo "$open_issues" | jq -r '.[] | (.title | capture("^Book \u0027(?<id>.+)\u0027 failed in workflow$")) as $m | "\(.number)\t\($m.id)"')
+          echo "Closed $closed resolved issues."
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          FAILED_COUNT: ${{ env.FAILED_COUNT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_CLOSE_PER_RUN: 200
 
       - name: Build mdBook site
         run: |
