@@ -194,7 +194,8 @@ jobs:
           EOF
 
               cd "$build_dir"
-              mdbook build
+              # The book.toml above has no 'src', so chapters are always in src/.
+              bash "$GITHUB_WORKSPACE/.github/workflows/with-cached-images.sh" src mdbook build
 
               EPUB_FILE=$(find book -name '*.epub' | head -n 1)
               if [ -z "$EPUB_FILE" ]; then
